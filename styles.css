@@ -1,0 +1,30 @@
+:root {
+    --background: #fffffe;
+    --headline-buttonText: #272343;
+    --paragraph: #2d334a;
+    --button-highlight: #ffd803;
+    --secondary: #e3f6f5;
+    --tertiary: #bae8e8;
+
+}
+
+* {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--background);
+}
+
+a {
+    color: hsla(200, 70%, 40%, 1);
+    font-weight: 500;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
