@@ -60,9 +60,48 @@
                                 Yadda Yadda Yadda
                             </div>
                         </div>
+                        <graffiti-discover
+                        v-slot="{ objects: messageObjects }"
+                        :channels="channels"
+                        :schema="{
+                            properties: {
+                                value: {
+                                    required: ['content', 'published'],
+                                    properties: {
+                                        content: { type: 'string' },
+                                        published: { type: 'number' },
+                                    }
+                                }
+                            }
+                        }"
+                        >
+                        <div v-for="object of messageObjects" class="message">
+                            <div class="message-header">
+                                <span class="handle">@{{object.actor}}</span>
+                            </div>
+                            <div class="message-content">
+                               {{ object.value.content }}
+                            </div>
+                        </div>
+                        </graffiti-discover>
                     </div>
                     <div class="sidebar-right">
-                        <button>Post</button>
+                        <button @click="showMessagePopUp=true">Post</button>
+                    </div>
+                </div>
+                <div class="overlay" v-if="showMessagePopUp">
+                    <div class="profile-popup">
+                        <div class="profile-popup-header">
+                            <button @click="showMessagePopUp=false">Close</button>
+                            <h2>Compose Message</h2>
+                            <button @click="sendMessage($graffitiSession.value)">Send</button>
+                        </div>
+                        <div class="profile-popup-body">
+                            <div class="profile-input">
+                                <textarea id="message" maxlength="250" v-model="myMessage"></textarea>
+                                <label for="message">Message</label>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <profile :show-my-profile="showMyProfile" @close="showMyProfile = false"></profile>

@@ -9,7 +9,7 @@ import Profile from "./components/Profile.js";
 const app = createApp({
     data() {
         return {
-            channels: ["chatbook"],
+            channels: ["main"],
             profile: null,
             showMyProfile: false,
             editProfile: {
@@ -17,12 +17,31 @@ const app = createApp({
                 displayname: '', 
                 role: '',
                 bio: ''
-            }
+            },
+            myMessage: '',
+            showMessagePopUp: false,
         };
     },
     methods: {
         async saveProfile(session) {
 
+        },
+
+        async sendMessage(session) {
+            if (!this.myMessage) return;
+
+            await this.$graffiti.put(
+                {
+                    value: {
+                        content: this.myMessage,
+                        published: Date.now(),
+                    },
+                    channels: this.channels,
+                },
+                session,
+            );
+
+            this.myMessage = "";
         }
     },
     async mounted() {
