@@ -6,7 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Chatbook</title>
         <link rel="stylesheet" href="styles.css">
-        <link rel="icon" type="image/png" href="images/open-book.png">
+        <link rel="icon" type="image/svg" href="images/books.svg">
         <script type="importmap">
             {
                 "imports": {
@@ -20,7 +20,53 @@
     </head>
     <body>
         <div id="app">
-            <header-component/>
+            <header>
+                <div class="left">
+                    <img src="images/books.svg">
+                    <h1>Chatbook</h1>
+                </div>
+                <div class="right">
+                    <template v-if="!$graffitiSession.value">
+                        <button @click="$graffiti.login()">Login</button>
+                    </template>
+                    <template v-else>
+                        <p>Hi, {{ $graffitiSession.value.actor }} </p>
+                        <button @click="$graffiti.logout($graffitiSession.value)">Logout</button>
+                    </template>
+                </div>
+            </header>
+            <main v-if="!$graffitiSession.value">
+                Welcome
+            </main>
+            <main v-else>
+                <div class="main-layout">
+                    <div class="sidebar-left">
+
+                    </div>
+                    <div class="feed">
+                        <div class="message">
+                            <div class="message-header">
+                                <span class="handle" @click="showMyProfile=true">@User</span>
+                            </div>
+                            <div class="message-content">
+                                Yadda Yadda Yadda
+                            </div>
+                        </div>
+                        <div class="message">
+                            <div class="message-header">
+                                <span class="handle">@User</span>
+                            </div>
+                            <div class="message-content">
+                                Yadda Yadda Yadda
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sidebar-right">
+                        <button>Post</button>
+                    </div>
+                </div>
+                <profile :show-my-profile="showMyProfile" @close="showMyProfile = false"></profile>
+            </main>
         </div>
         <script src="index.js" type="module"></script>
     </body>
