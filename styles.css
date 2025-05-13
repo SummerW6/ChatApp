@@ -8,16 +8,20 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 body {
   padding: 1rem 2rem;
 }
 
+
+
 #app {
   display: flex;
   flex-direction: column;
   gap: 25px;
+  min-width: 850px;
 }
 
 a {
@@ -44,6 +48,7 @@ header {
 
 .right {
   gap: 15px;
+
 }
 
 header img {
@@ -63,10 +68,25 @@ button {
   text-align: center;
   line-height: 25px;
   transition: transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 button:hover {
   transform: scale(1.05);
+  overflow: hidden;
+}
+
+button img {
+  width: 25px;
+}
+
+.profile-tag {
+  overflow: visible;
+}
+.profile-tag *{
+  overflow: visible;
 }
 
 .overlay {
@@ -92,6 +112,7 @@ button:hover {
   display: flex;
   flex-direction: column;
   gap: 25px;
+  overflow: visible;
 }
 
 .profile-popup-header {
@@ -99,6 +120,8 @@ button:hover {
   justify-content: space-between;
   align-items: center;
   font-weight: bold;
+  padding-left: 5px;
+  padding-right: 5px;
 }
 
 .profile-popup-body {
@@ -106,12 +129,14 @@ button:hover {
   flex-direction: column;
   justify-content: space-between;
   gap: 15px;
+  overflow: visible;
 }
 
 .profile-input {
   position: relative;
   margin-bottom: 1rem;
 }
+
 .profile-input input, textarea {
   border: 1px solid #ccc;
   border-radius: 10px;
@@ -144,65 +169,32 @@ button:hover {
   color: var(--accent-color);
 }
 
-.toggle {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 34px;
-}
-
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  inset: 0;
-  background-color: var(--student-color);
-  transition: .4s;
-  border-radius: 34px;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 26px;
-  width: 26px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  transition: .4s;
-  border-radius: 50%;
-}
-
-input:checked + .slider {
-  background-color: var(--teacher-color);
-}
-input:checked + .slider:before {
-  transform: translateX(26px);
-}
-
 .main-layout {
   display: grid;
-  grid-template-columns: 0.5fr .8fr 0.5fr;
+  grid-template-columns: 0.5fr 600px 0.5fr;
   height: 100vh;
+  overflow: hidden;
+  justify-content: center;
 }
 
 .sidebar-left {
   border-right: 1px solid #eee;
+  position: relative;
+  overflow-y: auto;
+  max-height: 90vh;
+  position: relative;
+  height: 100%;
 }
+
 
 .feed {
   border-right: 1px solid #eee;
+  max-width: 600px;
+  word-wrap: break-word;
+  overflow-y: auto;
+  max-height: 90vh;
+  position: relative;
+  height: 100%;
 }
 
 .message {
@@ -210,10 +202,113 @@ input:checked + .slider:before {
   flex-direction: column;
   padding: 1rem;
   border-bottom: 1px solid #eee;
+
 }
 
 .message-header {
   display: flex;
   gap: 0.4rem;
   font-size: 0.95rem;
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
 }
+
+.myUser, .handle {
+  font-weight: 700;
+}
+
+.myUser {
+  color: var(--teacher-color);
+}
+
+.otherUser {
+  color: var(--accent-color);
+}
+
+.myUser:hover, .handle:hover {
+  cursor: pointer;
+}
+
+.date {
+  font-size: 0.65rem;
+  color: #666;
+}
+
+.message:first-child {
+  margin-top: 10px;
+}
+
+.close-edit {
+  width: 10px !important;
+}
+.message-icons {
+  display: flex;
+  gap: 5px;
+}
+.message-icons img {
+  width: 15px;
+}
+
+.message-icons img:hover {
+  cursor: pointer;
+}
+
+.feed-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  position: sticky;
+  top: 0;
+  background-color: white;
+  border-bottom: 1px solid #eee;
+}
+
+.chat-list {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.chat-item {
+  /* border-radius: 8px; */
+  display: flex;
+  justify-content: space-between;
+  padding: .5rem;
+}
+
+.chat-item img {
+  width: 20px;
+}
+
+.chat-name {
+
+  font-weight: 500;
+  font-size: larger;
+}
+
+.chat-icon:hover {
+  cursor: pointer;
+}
+
+.chat-item:hover {
+  background-color: rgba(0, 110, 82, 0.1);
+  border-radius: 8px;
+}
+
+.selected-chat {
+  text-decoration: underline;
+  text-decoration-color: #006e52;
+  text-decoration-thickness: 4px;
+  text-underline-offset: 3px;
+}
+
+.invite-list {
+  padding: 10px;
+}
+
+.no-messages {
+  padding: 10px;
+}
+

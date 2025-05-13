@@ -13,10 +13,12 @@
                     "vue": "https://cdn.jsdelivr.net/npm/vue@3.5.13/dist/vue.esm-browser.js",
                     "@graffiti-garden/implementation-local": "https://cdn.jsdelivr.net/npm/@graffiti-garden/implementation-local@0.6.4/dist/browser/index.js",
                     "@graffiti-garden/implementation-remote": "https://cdn.jsdelivr.net/npm/@graffiti-garden/implementation-remote@0.6.2/dist/browser/index.js",
-                    "@graffiti-garden/wrapper-vue": "https://cdn.jsdelivr.net/npm/@graffiti-garden/wrapper-vue@0.7.2/dist/browser/plugin.mjs"
+                    "@graffiti-garden/wrapper-vue": "https://cdn.jsdelivr.net/npm/@graffiti-garden/wrapper-vue@0.7.2/dist/browser/plugin.mjs",
+                    "vue-multiselect": "https://cdn.jsdelivr.net/npm/vue-multiselect@3.0.0-alpha.1/dist/vue-multiselect.esm.js"
                 }
             }
         </script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vue-multiselect@3.0.0-alpha.1/dist/vue-multiselect.css">
     </head>
     <body>
         <div id="app">
@@ -30,7 +32,7 @@
                         <button @click="$graffiti.login()">Login</button>
                     </template>
                     <template v-else>
-                        <p>Hi, {{ $graffitiSession.value.actor }} </p>
+                        <p>Hi, <span title="Edit Profile" class="myUser" @click="showMyProfile=true">{{ $graffitiSession.value.actor }}</span> </p>
                         <button @click="$graffiti.logout($graffitiSession.value)">Logout</button>
                     </template>
                 </div>
@@ -41,55 +43,103 @@
             <main v-else>
                 <div class="main-layout">
                     <div class="sidebar-left">
+                        <div class="feed-header">
+                            <h2>Chats</h2>
+                            <button title="Create Chat" @click="showCreateChatPopUp=true"><img src="images/library.svg"></button>
+                        </div>
+                        <div class="chat-list">
+                            <div class="chat-item selected-chat">
+                                <span class="chat-name">Main Feed</span>
 
+                            </div>
+
+                            <graffiti-discover
+                                v-slot="{ objects: messageObjects }"
+                                :channels="channels"
+                                :schema="{
+                                    properties: {
+                                        value: {
+                                            required: ['name', 'about', 'people'],
+                                            properties: {
+                                                name: { type: 'string' },
+                                                about: { type: 'string' },
+                                                people: { type: 'array', items: { type: 'string' }}
+                                            }
+                                        }
+                                    }
+                                }"
+                                >
+                                <div class="chat-item" v-for="object of (chatObjects || []).filter(o => o.value.people.includes($graffitiSession.value.actor))">
+                                    <span class="chat-name">{{object.value.name}}</span>
+                                </div>
+                            </graffiti-discover>
+                        </div>
                     </div>
                     <div class="feed">
-                        <div class="message">
-                            <div class="message-header">
-                                <span class="handle" @click="showMyProfile=true">@User</span>
-                            </div>
-                            <div class="message-content">
-                                Yadda Yadda Yadda
-                            </div>
+                        <div class="feed-header">
+                            <h2>Main Feed</h2>
+                            <button @click="showMessagePopUp=true" title="Compose Message"><img src="images/book-add.svg"></button> 
                         </div>
-                        <div class="message">
-                            <div class="message-header">
-                                <span class="handle">@User</span>
-                            </div>
-                            <div class="message-content">
-                                Yadda Yadda Yadda
-                            </div>
-                        </div>
+
                         <graffiti-discover
                         v-slot="{ objects: messageObjects }"
                         :channels="channels"
                         :schema="{
                             properties: {
                                 value: {
-                                    required: ['content', 'published'],
+                                    required: ['content', 'published', 'isDeleted', 'oldContent'],
                                     properties: {
                                         content: { type: 'string' },
                                         published: { type: 'number' },
+                                        isDeleted: { type: 'boolean' },
+                                        oldContent: { type: 'string' },
                                     }
                                 }
                             }
                         }"
                         >
-                        <div v-for="object of messageObjects" class="message">
+                        <div class="no-messages" v-if="messageObjects.length === 0">
+                            No messages yet. Start the conversation!
+                        </div>
+                        <div v-for="object of messageObjects.sort((a, b) => b.value.published - a.value.published)" class="message">
                             <div class="message-header">
-                                <span class="handle">@{{object.actor}}</span>
+                                <div>
+                                    <!-- <span class="handle" title="View Profile" @click="handleProfileClick(object)">{{object.actor}}</span> -->
+                                     <span @click="showMyProfile=true" class="handle myUser" title="Edit Profile" v-if="object.actor === $graffitiSession.value.actor">{{object.actor}}</span>
+                                     <span @click="showOtherProfile($graffitiSession.value, object.actor)"class=" handle otherUser" title="View Profile" v-else>{{object.actor}}</span>
+                                     · <span class="date">{{ convertDate(object.value.published) }}  <span v-if="object.value.isEdited">(edited)</span></span>
+                                </div>
+                                <div v-if="object.actor === $graffitiSession.value.actor && !object.value.isDeleted" class="message-icons">
+                                    <img v-if="editUrl !== object.url" @click="editMessage(object)" title="Edit Message" src="images/pencil.svg"/>
+                                    <img @click="saveMessageEdit($graffitiSession.value, object)" title="Save Edit" v-else src="images/check.svg">
+                                    <img v-if="editUrl !== object.url" @click="deleteMessage($graffitiSession.value, object)" title="Delete Message" src="images/trash.svg"/>
+                                    <img @click="closeMessageEdit()" title="Close Edit" v-else class="close-edit" src="images/close.svg"/>
+    
+                                </div>
+                                <div class="message-icons" v-if="object.value.isDeleted">
+                                    <img @click="undoDeleteMessage($graffitiSession.value, object)" title="Un-Delete Message" src="images/undo-circular-arrow.svg"/>
+                                </div>
                             </div>
-                            <div class="message-content">
+                            <div v-if="editUrl !== object.url" class="message-content">
                                {{ object.value.content }}
+                            </div>
+                            <div v-else class="message-content">
+                                <textarea maxlength="250" v-model="editContent"></textarea>
                             </div>
                         </div>
                         </graffiti-discover>
                     </div>
                     <div class="sidebar-right">
-                        <button @click="showMessagePopUp=true">Post</button>
+                        <div class="feed-header">
+                            <h2>Invites</h2>
+                            <button title="Clear Invites"><img src="images/clear.svg"></button>
+                        </div>
+                        <div class="invite-list">
+                            <span>You have no chat invites.</span>
+                        </div>
                     </div>
                 </div>
-                <div class="overlay" v-if="showMessagePopUp">
+                <div class="overlay" v-if="showMessagePopUp" @click.self="showMessagePopUp=false">
                     <div class="profile-popup">
                         <div class="profile-popup-header">
                             <button @click="showMessagePopUp=false">Close</button>
@@ -101,10 +151,63 @@
                                 <textarea id="message" maxlength="250" v-model="myMessage"></textarea>
                                 <label for="message">Message</label>
                             </div>
+                            
                         </div>
                     </div>
                 </div>
-                <profile :show-my-profile="showMyProfile" @close="showMyProfile = false"></profile>
+                <div class="overlay" v-if="showCreateChatPopUp" @click.self="showCreateChatPopUp=false">
+                    <div class="profile-popup">
+                        <div class="profile-popup-header">
+                            <button @click="showCreateChatPopUp=false">Close</button>
+                            <h2>Create Chat</h2>
+                            <button type="submit"@click="createChat($graffitiSession.value)">Create</button>
+                        </div>
+                        <div class="profile-popup-body">
+                            <div class="profile-input">
+                                <input v-model="chat.name" id="chatname" type="text" required/>
+                                <label for="chatname">Name</label>
+                            </div>
+                            <div class="profile-input">
+                                <input v-model="chat.about" id="about" type="text" required/>
+                                <label for="about">About</label>
+                            </div>
+                            <div class="profile-input">
+                                <v-select 
+                                v-model="chat.people"
+                                placeholder="Add People"
+                                :options="[]"
+                                ></v-select>
+                            </div>
+                            <!-- <div class="profile-input">
+                                
+                                <label>People</label>
+                            </div> -->
+                        </div>
+                    </div>
+                </div>
+                <div class="overlay" v-if="otherProfile" @click.self="handleOtherProfileClose()">
+                    <div class="profile-popup">
+                        <div class="profile-popup-header">
+                            <button @click="handleOtherProfileClose()">Close</button>
+                            <h2>{{ otherProfile.value.username }} 's Profile</h2>
+                        </div>
+                        <div class="profile-popup-body">
+
+                            <div class="profile-input">
+                                <textarea id="bio" maxlength="250" :value="otherProfile.value.bio" readonly></textarea>
+                                <label for="Bio">Bio</label>
+                            </div>
+                            <div class="profile-tag">
+                                <v-select 
+                                placeholder="User Has No Tags"
+                                :options="otherProfile.value.tags"
+                                :disabled="true"
+                                ></v-select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <profile :show-my-profile="showMyProfile" :object="profile" @close="showMyProfile = false"></profile>
             </main>
         </div>
         <script src="index.js" type="module"></script>
